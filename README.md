@@ -1,6 +1,6 @@
 # HW05 - Interactive Basketball Court Infrastructure
 
-![Basketball Arena Demo](../media/NetaJoelBasketball.gif)
+![Basketball Arena Demo](@NetaJoelBasketball.gif)
 
 ## Group Members
 - Neta Nakdimon
