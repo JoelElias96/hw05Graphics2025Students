@@ -1,5 +1,7 @@
 # HW05 - Interactive Basketball Court Infrastructure
 
+![Basketball Arena Demo](../media/NetaJoelBasketball.gif)
+
 ## Group Members
 -Neta Nakdimon & Joel Elias
 ## Project Description
