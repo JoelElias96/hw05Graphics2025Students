@@ -196,6 +196,13 @@ function createThreePointLine(basketX, direction) {
 - Comprehensive net geometry with multiple line segments
 - Proper material properties for realistic appearance
 
+## 🏟️ Bonus Features - Stadium Environment
+- **Stadium Bleachers**: 8-row bleachers on both sides with 15 seats per row
+- **Physical Scoreboard**: 3D scoreboard positioned behind the basket showing HOME/AWAY scores
+- **Support Structures**: Realistic pole and arm support for the scoreboard
+- **LED Lighting**: Decorative lights around the scoreboard perimeter
+- **Realistic Materials**: Alternating blue seat colors and proper stadium atmosphere
+
 ## Known Issues/Limitations
 - This is the infrastructure version (HW05) - interactive ball physics will be added in HW06
 - Net segments are static (physics-based net movement will be implemented later)
@@ -215,7 +222,12 @@ The current infrastructure is designed to support the following features in the 
 - Additional camera control modes
 - Enhanced UI interactions
 
-## 📸 Screenshots
+## 📸 Screenshots & Demo
+
+### 🎬 Interactive Demo
+*Complete basketball arena with stadium environment, bleachers, and physical scoreboard*
+
+![Basketball Arena Demo](../media/NetaJoelBasketball.gif)
 
 ### Overall Court View (Top-Down)
 *Perfect basketball court layout with all required markings, three-point arcs, and floating basketball at center court*
