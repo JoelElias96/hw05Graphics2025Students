@@ -302,15 +302,180 @@ function createBasketball() {
     }
     createSeamLine(pointsBottom);
   }
-}
-
-// Create all elements
+  }
+  
+  // Create stadium environment with bleachers
+  function createStadiumEnvironment() {
+    // Create bleachers on both sides
+    createBleachers(0, 20, 1);  // Right side bleachers
+    createBleachers(0, -20, -1); // Left side bleachers
+  }
+  
+  // Create bleachers for stadium atmosphere
+  function createBleachers(x, z, side) {
+    const bleacherGroup = new THREE.Group();
+    
+    // Bleacher structure parameters
+    const rows = 8;
+    const seatsPerRow = 15;
+    const rowHeight = 1.5;
+    const rowDepth = 1.2;
+    const seatWidth = 1.8;
+    
+    for (let row = 0; row < rows; row++) {
+      for (let seat = 0; seat < seatsPerRow; seat++) {
+        // Create seat
+        const seatGeometry = new THREE.BoxGeometry(seatWidth * 0.9, 0.3, rowDepth * 0.8);
+        const seatMaterial = new THREE.MeshPhongMaterial({ 
+          color: row % 2 === 0 ? 0x1e40af : 0x3b82f6 // Alternating blue colors
+        });
+        const seatMesh = new THREE.Mesh(seatGeometry, seatMaterial);
+        
+        // Position seat
+        const seatX = x + (seat - seatsPerRow/2) * seatWidth;
+        const seatY = row * rowHeight + 0.5;
+        const seatZ = z + side * (row * rowDepth);
+        
+        seatMesh.position.set(seatX, seatY, seatZ);
+        seatMesh.castShadow = true;
+        bleacherGroup.add(seatMesh);
+        
+        // Create backrest
+        const backGeometry = new THREE.BoxGeometry(seatWidth * 0.9, rowHeight * 0.8, 0.2);
+        const backMaterial = new THREE.MeshPhongMaterial({ 
+          color: 0x1e3a8a // Darker blue
+        });
+        const backMesh = new THREE.Mesh(backGeometry, backMaterial);
+        backMesh.position.set(seatX, seatY + rowHeight * 0.4, seatZ + side * rowDepth * 0.4);
+        backMesh.castShadow = true;
+        bleacherGroup.add(backMesh);
+      }
+    }
+    
+    // Support structure
+    const supportGeometry = new THREE.BoxGeometry(seatsPerRow * seatWidth, 2, 2);
+    const supportMaterial = new THREE.MeshPhongMaterial({ color: 0x6b7280 });
+    const support = new THREE.Mesh(supportGeometry, supportMaterial);
+    support.position.set(x, -1, z);
+    support.castShadow = true;
+    bleacherGroup.add(support);
+    
+    scene.add(bleacherGroup);
+  }
+  
+  // Create physical 3D scoreboard behind the hoop
+  function createPhysicalScoreboard() {
+    const scoreboardGroup = new THREE.Group();
+    const scoreboardX = -20; // BEHIND the left basket, outside court
+    const scoreboardY = 15; // Height above the hoop
+    const scoreboardZ = 0; // Same z-position as the basket
+    
+    // Main scoreboard screen
+    const screenGeometry = new THREE.BoxGeometry(10, 5, 0.5);
+    const screenMaterial = new THREE.MeshPhongMaterial({ 
+      color: 0x001100,
+      emissive: 0x002200
+    });
+    const screen = new THREE.Mesh(screenGeometry, screenMaterial);
+    screen.position.set(scoreboardX, scoreboardY, scoreboardZ);
+    screen.rotation.y = Math.PI / 2; // Rotate 90 degrees to face the court
+    screen.castShadow = true;
+    scoreboardGroup.add(screen);
+    
+    // Scoreboard frame
+    const frameGeometry = new THREE.BoxGeometry(10.8, 5.8, 1);
+    const frameMaterial = new THREE.MeshPhongMaterial({ color: 0x2d3748 });
+    const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+    frame.position.set(scoreboardX, scoreboardY, scoreboardZ);
+    frame.rotation.y = Math.PI / 2; // Rotate 90 degrees to face the court
+    frame.castShadow = true;
+    scoreboardGroup.add(frame);
+    
+    // Create simple text using box geometry for HOME
+    function createScoreboardText(text, x, y, z, color = 0x00ff00, size = 0.5) {
+      const textGroup = new THREE.Group();
+      const charWidth = size;
+      const charHeight = size * 1.2;
+      const spacing = size * 1.1;
+      
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] !== ' ') {
+          const charGeometry = new THREE.BoxGeometry(charWidth, charHeight, 0.2);
+          const charMaterial = new THREE.MeshPhongMaterial({ 
+            color: color,
+            emissive: color === 0x00ff00 ? 0x001100 : (color === 0xff4444 ? 0x110000 : 0x001100)
+          });
+          const char = new THREE.Mesh(charGeometry, charMaterial);
+          char.position.set(x + (i - text.length/2) * spacing, y, z);
+          char.rotation.y = Math.PI / 2; // Rotate text to face the court
+          textGroup.add(char);
+        }
+      }
+      return textGroup;
+    }
+    
+    // Add HOME label and score (properly positioned for rotated scoreboard)
+    const homeLabel = createScoreboardText("HOME", scoreboardX + 0.3, scoreboardY + 1.5, scoreboardZ - 2, 0x00ff00, 0.4);
+    const homeScore = createScoreboardText("0", scoreboardX + 0.3, scoreboardY, scoreboardZ - 2, 0xff4444, 0.8);
+    
+    // Add AWAY label and score (properly positioned for rotated scoreboard)
+    const awayLabel = createScoreboardText("AWAY", scoreboardX + 0.3, scoreboardY + 1.5, scoreboardZ + 2, 0x00ff00, 0.4);
+    const awayScore = createScoreboardText("0", scoreboardX + 0.3, scoreboardY, scoreboardZ + 2, 0xff4444, 0.8);
+    
+    // Add dash separator between scores
+    const dashLabel = createScoreboardText("-", scoreboardX + 0.3, scoreboardY, scoreboardZ, 0xffffff, 0.6);
+    
+    scoreboardGroup.add(homeLabel);
+    scoreboardGroup.add(homeScore);
+    scoreboardGroup.add(awayLabel);
+    scoreboardGroup.add(awayScore);
+    scoreboardGroup.add(dashLabel);
+    
+         // Support pole from ground outside the court
+     const poleGeometry = new THREE.CylinderGeometry(0.2, 0.2, scoreboardY + 2);
+     const poleMaterial = new THREE.MeshPhongMaterial({ color: 0x4b5563 });
+     const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+     pole.position.set(scoreboardX, (scoreboardY + 2) / 2 - 1, scoreboardZ);
+     pole.castShadow = true;
+     scoreboardGroup.add(pole);
+     
+     // Support arm connecting pole to scoreboard
+     const armGeometry = new THREE.BoxGeometry(0.3, 0.3, 1);
+     const armMaterial = new THREE.MeshPhongMaterial({ color: 0x4b5563 });
+     const arm = new THREE.Mesh(armGeometry, armMaterial);
+     arm.position.set(scoreboardX, scoreboardY, scoreboardZ - 0.5);
+     arm.castShadow = true;
+     scoreboardGroup.add(arm);
+    
+         // LED-style lights around the scoreboard (adjusted for rotation)
+     for (let i = 0; i < 12; i++) {
+       const angle = (i / 12) * Math.PI * 2;
+       const lightGeometry = new THREE.SphereGeometry(0.12, 8, 8);
+       const lightMaterial = new THREE.MeshPhongMaterial({ 
+         color: 0xffffff,
+         emissive: 0x444444
+       });
+       const light = new THREE.Mesh(lightGeometry, lightMaterial);
+       light.position.set(
+         scoreboardX + 0.4,
+         scoreboardY + Math.sin(angle) * 3,
+         scoreboardZ + Math.cos(angle) * 5.8
+       );
+       scoreboardGroup.add(light);
+     }
+    
+    scene.add(scoreboardGroup);
+  }
+  
+  // Create all elements
 createBasketballCourt();
-createBasketballHoop(13, 1);  // Right hoop facing left
-createBasketballHoop(-13, -1); // Left hoop facing right
-createBasketball();
-
-// Set camera position for better view
+  createBasketballHoop(13, 1);  // Right hoop facing left
+  createBasketballHoop(-13, -1); // Left hoop facing right
+  createBasketball();
+  createStadiumEnvironment(); // Add stadium bleachers
+  createPhysicalScoreboard(); // Add 3D scoreboard above court
+  
+  // Set camera position for better view
 camera.position.set(0, 15, 25);
 camera.lookAt(0, 0, 0);
 
@@ -322,9 +487,9 @@ controls.maxPolarAngle = Math.PI / 2.2;
 controls.minDistance = 5;
 controls.maxDistance = 50;
 
-let isOrbitEnabled = true;
-
-// Handle key events
+  let isOrbitEnabled = true;
+  
+  // Handle key events
 function handleKeyDown(e) {
   if (e.key.toLowerCase() === "o") {
     isOrbitEnabled = !isOrbitEnabled;
