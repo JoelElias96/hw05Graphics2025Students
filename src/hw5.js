@@ -223,12 +223,14 @@ function createNet(x, y, parentGroup) {
   }
 }
 
-// Create static basketball at center court
+// Create realistic basketball at center court
 function createBasketball() {
-  const ballGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+  // Create basketball with better material properties
+  const ballGeometry = new THREE.SphereGeometry(0.6, 64, 64); // Higher resolution
   const ballMaterial = new THREE.MeshPhongMaterial({ 
-    color: 0xff6600,  // Orange color
-    shininess: 30
+    color: 0xd2691e,  // More realistic basketball orange
+    shininess: 20,    // Less shiny, more matte
+    specular: 0x222222 // Darker specular highlights
   });
   const basketball = new THREE.Mesh(ballGeometry, ballMaterial);
   basketball.position.set(0, 4, 0);  // Float the ball 4 units above the court
@@ -236,36 +238,70 @@ function createBasketball() {
   basketball.receiveShadow = true;
   scene.add(basketball);
   
-  // Add black seam lines
-  const seaMaterial = new THREE.LineBasicMaterial({ color: 0x000000 });
+  // Create realistic basketball seam lines
+  const seamMaterial = new THREE.LineBasicMaterial({ 
+    color: 0x000000,
+    linewidth: 2
+  });
   
-  // Vertical seam
-  const verticalSeamGeometry = new THREE.BufferGeometry();
-  const verticalPoints = [];
-  for (let i = 0; i <= 50; i++) {
-    const theta = (i / 50) * Math.PI;
-    const x = Math.sin(theta) * 0.61;
+  // Function to create curved seam line
+  function createSeamLine(points) {
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, seamMaterial);
+    line.position.set(0, 4, 0);
+    scene.add(line);
+  }
+  
+  // Create main vertical seams (basketball's characteristic curved lines)
+  for (let i = 0; i < 4; i++) {
+    const angle = (i / 4) * Math.PI * 2;
+    const points = [];
+    
+    // Create curved seam from top to bottom
+    for (let j = 0; j <= 50; j++) {
+      const t = j / 50;
+      const theta = t * Math.PI; // From 0 to PI (top to bottom)
+      
+      // Create the characteristic basketball curve
+      const curveFactor = Math.sin(theta) * 0.3; // Creates the curved shape
+      const adjustedAngle = angle + curveFactor;
+      
+      const radius = Math.sin(theta) * 0.61;
+      const x = Math.cos(adjustedAngle) * radius;
+      const z = Math.sin(adjustedAngle) * radius;
+      const y = Math.cos(theta) * 0.61;
+      
+      points.push(new THREE.Vector3(x, y, z));
+    }
+    createSeamLine(points);
+  }
+  
+  // Create horizontal seam lines for more detail
+  for (let i = 1; i <= 3; i++) {
+    const points = [];
+    const heightRatio = i / 4;
+    const theta = heightRatio * Math.PI;
+    const radius = Math.sin(theta) * 0.61;
     const y = Math.cos(theta) * 0.61;
-    verticalPoints.push(new THREE.Vector3(x, y, 0));
+    
+    for (let j = 0; j <= 32; j++) {
+      const phi = (j / 32) * Math.PI * 2;
+      const x = Math.cos(phi) * radius;
+      const z = Math.sin(phi) * radius;
+      points.push(new THREE.Vector3(x, y, z));
+    }
+    createSeamLine(points);
+    
+    // Mirror for bottom half
+    const pointsBottom = [];
+    for (let j = 0; j <= 32; j++) {
+      const phi = (j / 32) * Math.PI * 2;
+      const x = Math.cos(phi) * radius;
+      const z = Math.sin(phi) * radius;
+      pointsBottom.push(new THREE.Vector3(x, -y, z));
+    }
+    createSeamLine(pointsBottom);
   }
-  verticalSeamGeometry.setFromPoints(verticalPoints);
-  const verticalSeam = new THREE.Line(verticalSeamGeometry, seaMaterial);
-  verticalSeam.position.set(0, 4, 0);  // Match the floating basketball position
-  scene.add(verticalSeam);
-  
-  // Horizontal seam
-  const horizontalSeamGeometry = new THREE.BufferGeometry();
-  const horizontalPoints = [];
-  for (let i = 0; i <= 50; i++) {
-    const phi = (i / 50) * Math.PI * 2;
-    const x = Math.cos(phi) * 0.61;
-    const z = Math.sin(phi) * 0.61;
-    horizontalPoints.push(new THREE.Vector3(x, 0, z));
-  }
-  horizontalSeamGeometry.setFromPoints(horizontalPoints);
-  const horizontalSeam = new THREE.Line(horizontalSeamGeometry, seaMaterial);
-  horizontalSeam.position.set(0, 4, 0);  // Match the floating basketball position
-  scene.add(horizontalSeam);
 }
 
 // Create all elements
